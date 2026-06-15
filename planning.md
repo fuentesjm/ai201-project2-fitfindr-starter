@@ -77,13 +77,15 @@ Should return error on why it failed or why the caption is unable to be produce.
 
 **How does your agent decide which tool to call next?**
 <!-- Describe the logic your planning loop uses. What does it look at? What conditions change its behavior? How does it know when it's done? -->
-
+the agent will start by reading the user's query. The agent will then strip out description of what the user's wants, their size, and max price the user is willing to pay. Based on those three information, the agent will call search_listings() and fill in the parameters for description, size, and max_price. The agent will then wait untill search_listings() outputs three matching listings and will use the top result (search_listings()[0]) and use that for new_item parameter for the next tool suggest_outfit(). The agent will also input the user's wardobe such as what they mostly wear as the wardrobe parameter for suggest_outfit() tool. The agent will then wait for the tool to return one or more complete outfit combinations and use the first complete outfit combination as the outfit parameter for create_fit_card() tool. Reusing the same new_item parameter as before and the outfit parameter,  the tool will generate a short, shareable description of the complete outfit.
 ---
 
 ## State Management
 
 **How does information from one tool get passed to the next?**
 <!-- Describe how your agent stores and accesses state within a session. What data is tracked? How is it passed between tool calls? -->
+
+All state for a single interaction lives in one session dictionary created by _new_session(query, wardrobe) at the start of run_agent(). Each tool reads the fields it needs and writes its result back, so nothing is passed implicitly. The loop calls search_listings and stores its output in session["search_results"], selects the top result into session["selected_item"], passes that as new_item to suggest_outfit (storing session["outfit_suggestion"]), then feeds both into create_fit_card (storing session["fit_card"]).
 
 ---
 
@@ -93,9 +95,9 @@ For each tool, describe the specific failure mode you're handling and what the a
 
 | Tool | Failure mode | Agent response |
 |------|-------------|----------------|
-| search_listings | No results match the query | |
-| suggest_outfit | Wardrobe is empty | |
-| create_fit_card | Outfit input is missing or incomplete | |
+| search_listings | No results match the query | Stop the loop. Write a message to `session["error"]` (e.g. "No listings found for '{description}' in size {size} under ${max_price}"), and return the session early without calling `suggest_outfit` or `create_fit_card`. |
+| suggest_outfit | Wardrobe is empty | Don't crash — suggest an outfit built around the new item alone (or note that the user has no wardrobe items to pair with). If no combination can be produced, set `session["error"]` and skip `create_fit_card`. |
+| create_fit_card | Outfit input is missing or incomplete | Validate that `selected_item` and `outfit_suggestion` are present first. If either is missing, set `session["error"]` explaining the card couldn't be generated and return without a fit card. |
 
 ---
 
@@ -109,6 +111,44 @@ For each tool, describe the specific failure mode you're handling and what the a
      ASCII art, a Mermaid diagram (https://mermaid.js.org/syntax/flowchart.html), or an embedded
      sketch are all fine. You'll share this diagram with an AI tool when asking it to implement
      the planning loop and each individual tool. -->
+
+```
+  User query + wardrobe
+          |
+          v
+  +--------------------------+
+  | Session dict             |  <--- single source of truth
+  | (_new_session)           |        every tool reads/writes here
+  +--------------------------+
+          |
+          v
+  Parse query -> description, size, max_price
+          |
+          v
+  +--------------------------+      no match
+  | search_listings()        |---------------> session.error = "no listings found"
+  +--------------------------+                            |
+          | results found                                |
+          v                                              |
+  Select top result -> selected_item                     |
+          |                                              |
+          v                                              |
+  +--------------------------+   none possible           |
+  | suggest_outfit()         |-------------> session.error = "no outfit combination"
+  +--------------------------+                            |
+          | outfit produced                              |
+          v                                              |
+  +--------------------------+  missing input            |
+  | create_fit_card()        |-------------> session.error = "card not generated"
+  +--------------------------+                            |
+          | card created                                 |
+          v                                              v
+  Return session ->                          Return session early ->
+  show fit_card                              show error message
+
+  (every tool above reads its inputs from, and writes its
+   results back to, the shared Session dict)
+```
 
 ---
 
