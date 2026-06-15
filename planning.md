@@ -16,18 +16,19 @@ You must have at least 3 tools. The three required tools are listed — add any 
 
 **What it does:**
 <!-- Describe what this tool does in 1–2 sentences -->
-
+Searches through a designated listings dataset in which returns matching items based on the input parameters.
 **Input parameters:**
 <!-- List each parameter, its type, and what it represents -->
-- `description` (str): ...
-- `size` (str): ...
-- `max_price` (float): ...
+- `description` (str): represents what the user is specifically looking for in terms of clothings
+- `size` (str): represents the size of what the user wears and looking for based on description
+- `max_price` (float): represents how much the user is willing to pay.
 
 **What it returns:**
 <!-- Describe the return value — what fields does a result contain? -->
-
+Returns three matching listings sorted by relevance
 **What happens if it fails or returns nothing:**
 <!-- What should the agent do if no listings match? -->
+Output should let the user know there is no matching suggestion for the specific requirement
 
 ---
 
@@ -35,35 +36,35 @@ You must have at least 3 tools. The three required tools are listed — add any 
 
 **What it does:**
 <!-- Describe what this tool does in 1–2 sentences -->
-
+Obtain the specific item such as the 1 to 3 results return by step 1 and given the user's current wardrobe description. It will suggest 1 or more complete outfit combinations.
 **Input parameters:**
 <!-- List each parameter, its type, and what it represents -->
-- `new_item` (dict): ...
-- `wardrobe` (dict): ...
+- `new_item` (dict): based on the search_listings() results such as "band tee".
+- `wardrobe` (dict): based on the query description of the user's wardrobe.
 
 **What it returns:**
 <!-- Describe the return value -->
-
+return a string of outfit combinations
 **What happens if it fails or returns nothing:**
 <!-- What should the agent do if the wardrobe is empty or no outfit can be suggested? -->
-
+Output should let the user know there is no matching outfit combination for the specific requirement
 ---
 
 ### Tool 3: create_fit_card
 
 **What it does:**
 <!-- Describe what this tool does in 1–2 sentences -->
-
+Outputs a small description of a complete outfit based on step 1-2. Most produce something different each time and similar to a caption.
 **Input parameters:**
 <!-- List each parameter, its type, and what it represents -->
-- `outfit` (...): ...
+- `outfit` (...): represents the complete outfit combination that have resulted from step 2 tool
 
 **What it returns:**
 <!-- Describe the return value -->
-
+Returns a description in string format which will be a shareable description for a caption related post.
 **What happens if it fails or returns nothing:**
 <!-- What should the agent do if the outfit data is incomplete? -->
-
+Should return error on why it failed or why the caption is unable to be produce.
 ---
 
 ### Additional Tools (if any)
