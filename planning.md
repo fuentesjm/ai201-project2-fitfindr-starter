@@ -138,12 +138,13 @@ Write out what a full user interaction looks like from start to finish — tool 
 
 **Step 1:**
 <!-- What does the agent do first? Which tool is called? With what input? -->
-
+the agent will call search_listings() tool and will use the "vintage graphic tee" as the description parameter. $30 in the query will be the max_price in the tool parameter. search_listings() will then return the top result
 **Step 2:**
 <!-- What happens next? What was returned from step 1? What tool is called now? -->
-
+the agent will then call suggest_outfit(). The new_item parameter will be the top result of search_listings() tool and the wardrobe paramter will be the user's wardrobe such as from the original query "baggy jeans and chunky sneakers". This tool will return suggestion.
 **Step 3:**
 <!-- Continue until the full interaction is complete -->
-
+the agent will then call create_fit_card() tool and outfit parameter will be the result of step 2 and new_item will be from step 1. 
 **Final output to user:**
 <!-- What does the user actually see at the end? -->
+the output would be a result of a fit. An example will be "thrifted this faded band tee off depop for $22 and honestly it was made for my wide-legs 🖤 full look in my stories".
